@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <color name="color_primary">#2E7D32</color>
+    <color name="color_primary_dark">#1B5E20</color>
+    <color name="color_accent">#4CAF50</color>
+    <color name="background_dark">#121212</color>
+    <color name="surface_dark">#1E1E1E</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#B3B3B3</color>
+    <color name="button_number">#37474F</color>
+    <color name="button_operation">#FF9800</color>
+    <color name="button_equals">#4CAF50</color>
+    <color name="button_clear">#F44336</color>
+    <color name="display_background">#263238</color>
 </resources>

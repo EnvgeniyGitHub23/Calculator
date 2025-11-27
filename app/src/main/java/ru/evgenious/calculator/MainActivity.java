@@ -1,5 +1,6 @@
 package ru.evgenious.calculator;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.widget.EditText;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,6 +18,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Убираем ActionBar только в горизонтальной ориентации
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().hide();
+            }
+        }
 
         // Восстановление состояния при повороте экрана
         if (savedInstanceState != null) {
