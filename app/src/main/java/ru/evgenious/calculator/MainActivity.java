@@ -15,11 +15,11 @@ import ru.evgenious.calculator.databinding.ActivityMainBinding;
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
-    private String currentInput = "0";
-    private String currentOperator = "";
-    private double operand1 = 0;
-    private boolean waitingForOperand = false;
-    private boolean calculated = false;
+    private String currentInput = "0"; // текущее значение в окне
+    private String currentOperator = ""; // текущий оператор
+    private double operand1 = 0; // первый операнд
+    private boolean waitingForOperand = false; // флаг ждем ли оператор
+    private boolean calculated = false; // посчитано?
 
     private static final String KEY_CURRENT_INPUT = "current_input";
     private static final String KEY_CURRENT_OPERATOR = "current_operator";
@@ -42,12 +42,11 @@ public class MainActivity extends AppCompatActivity {
                 getSupportActionBar().hide();
             }
         } else {
-            // Настройка toggle для Drawer без строк доступности
             drawerToggle = new ActionBarDrawerToggle(
                     this,
                     binding.drawerLayout,
-                    0,  // вместо R.string.drawer_open
-                    0   // вместо R.string.drawer_close
+                    0,
+                    0
             );
             binding.drawerLayout.addDrawerListener(drawerToggle);
             drawerToggle.syncState();
@@ -151,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
             waitingForOperand = true;
             calculated = false;
         } catch (NumberFormatException e) {
-            currentInput = "Error";
+            currentInput = getString(R.string.error);
             updateDisplay();
             resetCalculator();
         }
@@ -182,7 +181,10 @@ public class MainActivity extends AppCompatActivity {
                 case "-": result = operand1 - operand2; break;
                 case "×": result = operand1 * operand2; break;
                 case "/":
-                    if (operand2 == 0) { currentInput = "Деление на 0"; updateDisplay(); resetCalculator(); return; }
+                    if (operand2 == 0) {
+                        showDivisionByZeroMessage();
+                        return;
+                    }
                     result = operand1 / operand2;
                     break;
             }
@@ -192,10 +194,30 @@ public class MainActivity extends AppCompatActivity {
             waitingForOperand = true;
             updateDisplay();
         } catch (NumberFormatException e) {
-            currentInput = "Ошибка";
+            currentInput = getString(R.string.error);
             updateDisplay();
             resetCalculator();
         }
+    }
+    // выводим всплывающее сообщение при попыттке делить на 0
+    private void showDivisionByZeroMessage() {
+        String previousInput = currentInput;
+        String previousOperator = currentOperator;
+
+        resetCalculator();
+        currentInput = getString(R.string.uncknown);
+        updateDisplay();
+
+        // Показываем Snackbar
+        com.google.android.material.snackbar.Snackbar snackbar =
+                com.google.android.material.snackbar.Snackbar.make(
+                        binding.getRoot(),
+                        R.string.devideBy0,
+                        com.google.android.material.snackbar.Snackbar.LENGTH_LONG
+                );
+
+        snackbar.setActionTextColor(getResources().getColor(android.R.color.holo_red_light));
+        snackbar.show();
     }
 
     private void resetCalculator() {

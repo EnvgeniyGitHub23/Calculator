@@ -6,4 +6,8 @@
     <string name="appName">Калькулятор</string>
     <string name="about">О приложении</string>
     <string name="autorInfo">Автор: Евгений Сергеевич</string>
+    <string name="devideBy0">Деление на ноль невозможно</string>
+    <string name="ok_zero">Буду знать</string>
+    <string name="uncknown">Не определено</string>
+    <string name="error">Ошибка</string>
 </resources>
