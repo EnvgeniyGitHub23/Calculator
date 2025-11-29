@@ -1,21 +1,25 @@
 package ru.evgenious.calculator;
 
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
+import android.view.MenuItem;
 import android.widget.Button;
+
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
 
 import ru.evgenious.calculator.databinding.ActivityMainBinding;
 
-
 public class MainActivity extends AppCompatActivity {
 
-    private ActivityMainBinding binding; // Объект привязки представлений
+    private ActivityMainBinding binding;
     private String currentInput = "0";
-    private String currentOperator = ""; // текущий оператор
-    private double operand1 = 0; // первый операнд
-    private boolean waitingForOperand = false; // флаг ждем ли ввода оператора
-    private boolean calculated = false; // посчитано?
+    private String currentOperator = "";
+    private double operand1 = 0;
+    private boolean waitingForOperand = false;
+    private boolean calculated = false;
 
     private static final String KEY_CURRENT_INPUT = "current_input";
     private static final String KEY_CURRENT_OPERATOR = "current_operator";
@@ -23,18 +27,34 @@ public class MainActivity extends AppCompatActivity {
     private static final String KEY_WAITING_FOR_OPERAND = "waiting_for_operand";
     private static final String KEY_CALCULATED = "calculated";
 
+    private ActionBarDrawerToggle drawerToggle;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Здесь мы получаем экземпляр класса ActivityMainBinding и устанавливаем корневую layout
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Остальное остаётся неизменным
+        // Скрываем ActionBar в ландшафте
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             if (getSupportActionBar() != null) {
                 getSupportActionBar().hide();
+            }
+        } else {
+            // Настройка toggle для Drawer без строк доступности
+            drawerToggle = new ActionBarDrawerToggle(
+                    this,
+                    binding.drawerLayout,
+                    0,  // вместо R.string.drawer_open
+                    0   // вместо R.string.drawer_close
+            );
+            binding.drawerLayout.addDrawerListener(drawerToggle);
+            drawerToggle.syncState();
+
+            // Включаем кнопку "гамбургер"
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             }
         }
 
@@ -50,6 +70,24 @@ public class MainActivity extends AppCompatActivity {
         setupNumberButtons();
         setupFunctionButtons();
         updateDisplay();
+
+        // Обработка пунктов меню
+        binding.navigationView.setNavigationItemSelectedListener(item -> {
+            if (item.getItemId() == R.id.nav_about) {
+                startActivity(new Intent(MainActivity.this, AboutActivity.class));
+            }
+            binding.drawerLayout.closeDrawer(GravityCompat.START);
+            return true;
+        });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Обработка нажатия на кнопку гамбургер
+        if (drawerToggle != null && drawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -78,12 +116,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupFunctionButtons() {
-        // Аналогично другим методам, тут тоже ничего не меняется
         binding.buttonClear.setOnClickListener(v -> onClearButtonClick());
         binding.buttonDel.setOnClickListener(v -> onDeleteButtonClick());
 
         int[] operationButtonIds = {R.id.button_plus, R.id.button_minus, R.id.button_multiply, R.id.button_divide};
-
         for (int id : operationButtonIds) {
             Button button = binding.getRoot().findViewById(id);
             button.setOnClickListener(v -> onOperationButtonClick(((Button) v).getText().toString()));
@@ -92,43 +128,22 @@ public class MainActivity extends AppCompatActivity {
         binding.buttonEquals.setOnClickListener(v -> onEqualsButtonClick());
     }
 
-
     private void onNumberButtonClick(String digit) {
-        if (calculated) {
-            currentInput = "0";
-            calculated = false;
-        }
-
-        if (waitingForOperand) {
-            currentInput = "0";
-            waitingForOperand = false;
-        }
+        if (calculated) { currentInput = "0"; calculated = false; }
+        if (waitingForOperand) { currentInput = "0"; waitingForOperand = false; }
 
         if (currentInput.equals("0")) {
-            if (digit.equals(".")) {
-                currentInput = "0.";
-            } else {
-                currentInput = digit;
-            }
+            currentInput = digit.equals(".") ? "0." : digit;
         } else {
-            // Проверка на повторение точки
-            if (digit.equals(".") && currentInput.contains(".")) {
-                return;
-            }
+            if (digit.equals(".") && currentInput.contains(".")) return;
             currentInput += digit;
         }
         updateDisplay();
     }
 
     private void onOperationButtonClick(String operation) {
-        if (waitingForOperand) {
-            currentOperator = operation;
-            return;
-        }
-
-        if (!currentOperator.isEmpty() && !waitingForOperand) {
-            calculate();
-        }
+        if (waitingForOperand) { currentOperator = operation; return; }
+        if (!currentOperator.isEmpty()) calculate();
 
         try {
             operand1 = Double.parseDouble(currentInput);
@@ -143,31 +158,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void onEqualsButtonClick() {
-        if (currentOperator.isEmpty() || waitingForOperand) {
-            return;
-        }
-
+        if (currentOperator.isEmpty() || waitingForOperand) return;
         calculate();
         currentOperator = "";
         calculated = true;
     }
 
-    private void onClearButtonClick() {
-        resetCalculator();
-        currentInput = "0";
-        updateDisplay();
-    }
+    private void onClearButtonClick() { resetCalculator(); currentInput = "0"; updateDisplay(); }
 
     private void onDeleteButtonClick() {
-        if (calculated || waitingForOperand) {
-            currentInput = "0";
-            waitingForOperand = false;
-            calculated = false;
-        } else if (currentInput.length() > 1) {
-            currentInput = currentInput.substring(0, currentInput.length() - 1);
-        } else {
-            currentInput = "0";
-        }
+        if (calculated || waitingForOperand) { currentInput = "0"; waitingForOperand = false; calculated = false; }
+        else if (currentInput.length() > 1) currentInput = currentInput.substring(0, currentInput.length() - 1);
+        else currentInput = "0";
         updateDisplay();
     }
 
@@ -175,41 +177,20 @@ public class MainActivity extends AppCompatActivity {
         try {
             double operand2 = Double.parseDouble(currentInput);
             double result = 0;
-
             switch (currentOperator) {
-                case "+":
-                    result = operand1 + operand2;
-                    break;
-                case "-":
-                    result = operand1 - operand2;
-                    break;
-                case "×":
-                    result = operand1 * operand2;
-                    break;
+                case "+": result = operand1 + operand2; break;
+                case "-": result = operand1 - operand2; break;
+                case "×": result = operand1 * operand2; break;
                 case "/":
-                    if (operand2 == 0) {
-                        currentInput = "Деление на 0";
-                        updateDisplay();
-                        resetCalculator();
-                        return;
-                    }
+                    if (operand2 == 0) { currentInput = "Деление на 0"; updateDisplay(); resetCalculator(); return; }
                     result = operand1 / operand2;
                     break;
             }
-
-            // Форматируем результат для отображения в текствью
-            if (result == (long) result) {
-                currentInput = String.valueOf((long) result);
-            } else {
-                currentInput = String.valueOf(result);
-                // Убираем лишние нули в конце  дроби
-                currentInput = currentInput.replaceAll("0*$", "").replaceAll("\\.$", "");
-            }
-
+            if (result == (long) result) currentInput = String.valueOf((long) result);
+            else currentInput = String.valueOf(result).replaceAll("0*$", "").replaceAll("\\.$", "");
             operand1 = result;
             waitingForOperand = true;
             updateDisplay();
-
         } catch (NumberFormatException e) {
             currentInput = "Ошибка";
             updateDisplay();
@@ -225,7 +206,5 @@ public class MainActivity extends AppCompatActivity {
         calculated = false;
     }
 
-    private void updateDisplay() {
-        binding.display.setText(currentInput);
-    }
+    private void updateDisplay() { binding.display.setText(currentInput); }
 }

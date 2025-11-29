@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Calculator</string>
+    <string name="drawer_open">Открыть меню</string>
+    <string name="drawer_close">Закрыть меню</string>
+    <string name="back">Назад</string>
+    <string name="appName">Калькулятор</string>
+    <string name="about">О приложении</string>
+    <string name="autorInfo">Автор: Евгений Сергеевич</string>
 </resources>
