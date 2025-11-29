@@ -2,19 +2,20 @@ package ru.evgenious.calculator;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.widget.EditText;
 import androidx.appcompat.app.AppCompatActivity;
-import android.view.View;
 import android.widget.Button;
+
+import ru.evgenious.calculator.databinding.ActivityMainBinding;
+
 
 public class MainActivity extends AppCompatActivity {
 
-    private EditText display;
+    private ActivityMainBinding binding; // Объект привязки представлений
     private String currentInput = "0";
-    private String currentOperator = "";
-    private double operand1 = 0;
-    private boolean waitingForOperand = false;
-    private boolean calculated = false;
+    private String currentOperator = ""; // текущий оператор
+    private double operand1 = 0; // первый операнд
+    private boolean waitingForOperand = false; // флаг ждем ли ввода оператора
+    private boolean calculated = false; // посчитано?
 
     private static final String KEY_CURRENT_INPUT = "current_input";
     private static final String KEY_CURRENT_OPERATOR = "current_operator";
@@ -25,16 +26,18 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-        // Убираем ActionBar только в горизонтальной ориентации
+        // Здесь мы получаем экземпляр класса ActivityMainBinding и устанавливаем корневую layout
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
+        // Остальное остаётся неизменным
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             if (getSupportActionBar() != null) {
                 getSupportActionBar().hide();
             }
         }
 
-        // Восстановление состояния при повороте экрана
         if (savedInstanceState != null) {
             currentInput = savedInstanceState.getString(KEY_CURRENT_INPUT, "0");
             currentOperator = savedInstanceState.getString(KEY_CURRENT_OPERATOR, "");
@@ -59,9 +62,7 @@ public class MainActivity extends AppCompatActivity {
         outState.putBoolean(KEY_CALCULATED, calculated);
     }
 
-    private void initializeViews() {
-        display = findViewById(R.id.display);
-    }
+    private void initializeViews() {}
 
     private void setupNumberButtons() {
         int[] numberButtonIds = {
@@ -71,56 +72,26 @@ public class MainActivity extends AppCompatActivity {
         };
 
         for (int id : numberButtonIds) {
-            Button button = findViewById(id);
-            button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onNumberButtonClick(((Button) v).getText().toString());
-                }
-            });
+            Button button = binding.getRoot().findViewById(id);
+            button.setOnClickListener(v -> onNumberButtonClick(((Button) v).getText().toString()));
         }
     }
 
     private void setupFunctionButtons() {
-        // Кнопка очистки
-        findViewById(R.id.button_clear).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onClearButtonClick();
-            }
-        });
+        // Аналогично другим методам, тут тоже ничего не меняется
+        binding.buttonClear.setOnClickListener(v -> onClearButtonClick());
+        binding.buttonDel.setOnClickListener(v -> onDeleteButtonClick());
 
-        // Кнопка удаления последнего символа
-        findViewById(R.id.button_del).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onDeleteButtonClick();
-            }
-        });
-
-        // Операции
-        int[] operationButtonIds = {
-                R.id.button_plus, R.id.button_minus, R.id.button_multiply, R.id.button_divide
-        };
+        int[] operationButtonIds = {R.id.button_plus, R.id.button_minus, R.id.button_multiply, R.id.button_divide};
 
         for (int id : operationButtonIds) {
-            Button button = findViewById(id);
-            button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onOperationButtonClick(((Button) v).getText().toString());
-                }
-            });
+            Button button = binding.getRoot().findViewById(id);
+            button.setOnClickListener(v -> onOperationButtonClick(((Button) v).getText().toString()));
         }
 
-        // Кнопка "="
-        findViewById(R.id.button_equals).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onEqualsButtonClick();
-            }
-        });
+        binding.buttonEquals.setOnClickListener(v -> onEqualsButtonClick());
     }
+
 
     private void onNumberButtonClick(String digit) {
         if (calculated) {
@@ -255,6 +226,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateDisplay() {
-        display.setText(currentInput);
+        binding.display.setText(currentInput);
     }
 }
